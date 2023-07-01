@@ -1,6 +1,9 @@
 const User = require("../model/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const Photo = require("../model/Image");
+const exif = require("exif");
+const browserEnv = require('browser-env');
 
 const signup = async (req, res) => {
   const { name, email, password } = req.body;
@@ -54,5 +57,81 @@ const login = async (req, res) => {
   });
 };
 
+const getUserLocation = async () => {
+  
+  browserEnv.mock({
+    navigator: {
+      geolocation: {
+        getCurrentPosition: async () => {
+          return {
+            coords: {
+              latitude: 40.7127,
+              longitude: -74.0059,
+            },
+          };
+        },
+      },
+    },
+  });
+
+  
+  const location = await navigator.geolocation.getCurrentPosition();
+
+  return {
+    latitude: location.coords.latitude,
+    longitude: location.coords.longitude,
+  };
+};
+
+
+
+const postPhoto = async (req, res) => {
+  try {
+   
+    if (!req.file) {
+      return res.status(400).json({ error: 'No photo file uploaded' });
+    }
+
+    
+    const exifData = await exif(req.file.path);
+
+    
+    const userLocation = await getUserLocation();
+
+    
+    if (exifData) {
+      const latitude = exifData.gps.GPSLatitude;
+      const longitude = exifData.gps.GPSLongitude;
+      const location = {
+        type: 'Point',
+        coordinates: [longitude, latitude],
+      };
+    } else {
+      const location = userLocation;
+    }
+
+    const photo = new Photo({
+      image: [
+        {
+          url: req.file.path,
+          filename: req.file.filename,
+        },
+      ],
+      location,
+    });
+
+    await photo.save();
+
+    return res.status(200).json({ message: 'Photo uploaded successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+
+
+exports.postPhoto = postPhoto;
 exports.signup = signup;
 exports.login = login;

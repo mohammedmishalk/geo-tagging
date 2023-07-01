@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+
 import {
   MDBCol,
   MDBContainer,
@@ -14,15 +15,15 @@ import {
   MDBModalBody,
   MDBModalFooter,
   MDBInput,
-} from 'mdb-react-ui-kit';
-import { useNavigate } from 'react-router-dom';
-import axios from '../../api/axios';
+} from "mdb-react-ui-kit";
+import { useNavigate } from "react-router-dom";
+import axios from "../../api/axios";
 
 function Home() {
   const navigate = useNavigate();
   const [photos, setPhotos] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [photoTitle, setPhotoTitle] = useState('');
+  const [photoTitle, setPhotoTitle] = useState("");
   const [photoFile, setPhotoFile] = useState(null);
 
   useEffect(() => {
@@ -42,7 +43,7 @@ function Home() {
 
   const handleCloseModal = () => {
     setModalOpen(false);
-    setPhotoTitle('');
+    setPhotoTitle("");
     setPhotoFile(null);
   };
 
@@ -52,35 +53,35 @@ function Home() {
   };
 
   const handlePostPhoto = () => {
-    // Create a new FormData instance
     const formData = new FormData();
-    formData.append('title', photoTitle);
-    formData.append('photo', photoFile);
-
-    // Handle posting photo logic here
-    // Example:
-    // axios.post('/photos', formData)
-    //   .then(response => {
-    //     // Handle success
-    //     console.log('Photo posted successfully!');
-    //     setPhotoTitle('');
-    //     setPhotoFile(null);
-    //     setModalOpen(false);
-    //     // You may want to fetch the updated list of photos from the API
-    //   })
-    //   .catch(error => {
-    //     // Handle error
-    //     console.error(error);
-    //   });
+    formData.append("photo", photoFile);
+    axios
+      .post("/user/photo", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        // Handle success
+        console.log("Photo posted successfully!");
+        setPhotoTitle("");
+        setPhotoFile(null);
+        setModalOpen(false);
+        // You may want to fetch the updated list of photos from the API
+      })
+      .catch((error) => {
+        // Handle error
+        console.error(error);
+      });
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    window.location.href = '/'; // redirect to login page after logout
+    localStorage.removeItem("token");
+    window.location.href = "/"; // redirect to login page after logout
   };
 
   return (
-    <div className="vh-100" style={{ backgroundColor: '#6a11cb' }}>
+    <div className="vh-100" style={{ backgroundColor: "#6a11cb" }}>
       <MDBNavbar light bgColor="light">
         <MDBContainer fluid>
           <MDBNavbarBrand>Home</MDBNavbarBrand>
@@ -106,11 +107,6 @@ function Home() {
           <h5 className="fw-bold">Post Photo</h5>
         </MDBModalHeader>
         <MDBModalBody>
-          <MDBInput
-            label="Title"
-            value={photoTitle}
-            onChange={(e) => setPhotoTitle(e.target.value)}
-          />
           <MDBInput type="file" label="Photo" onChange={handleFileChange} />
         </MDBModalBody>
         <MDBModalFooter>
