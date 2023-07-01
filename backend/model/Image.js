@@ -10,13 +10,14 @@ const photoSchema = new mongoose.Schema({
         }
       }],
   location: {
+    type: {
+      type: String,
+      default: 'Point',
+    },
     coordinates: {
       type: [Number],
       required: true,
     },
-  },
-  description: {
-    type: String,
   },
   createdAt: {
     type: Date,
