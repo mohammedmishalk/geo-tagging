@@ -25,20 +25,58 @@ function Home() {
   const [modalOpen, setModalOpen] = useState(false);
   const [photoTitle, setPhotoTitle] = useState("");
   const [photoFile, setPhotoFile] = useState(null);
-
+  const [userLocation, setUserLocation] = useState(null);
+  const [Location, setLocation] = useState(null);
+  const [first, setfirst] = useState(false)
+  console.log(photos)
+//  const latitude = '11.2475528';
+//  const longitude = '75.8341161';
   useEffect(() => {
     // Fetch photos from API or any other data source
     // Update the 'photos' state with the fetched photos
     // Example:
-    // axios.get('/photos').then(response => {
-    //   setPhotos(response.data);
-    // }).catch(error => {
-    //   console.error(error);
-    // });
-  }, []);
+     axios.get('/user/getimage').then(response => {
+      setPhotos(response.data.images);
+   
+    }).catch(error => {
+      console.error(error);
+    });
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ latitude, longitude });
+        },
+        error => {
+          console.error(error);
+        }
+      );
+    }
+  }, [first]);
+
+
+  const getGeolocation = async (latitude, longitude) => {
+    try {
+      const response = await axios.get(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+      );
+  
+      if (response.data) {
+        const address = response.data.display_name;
+        setLocation(address);
+      } else {
+        console.log('No results found');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   const handlePostPhotos = () => {
     setModalOpen(true);
+    const { latitude, longitude } = userLocation;
+    getGeolocation(latitude, longitude)
+    
   };
 
   const handleCloseModal = () => {
@@ -52,28 +90,69 @@ function Home() {
     setPhotoFile(file);
   };
 
+  //   const formData = new FormData();
+  //   formData.append("photo", photoFile);
+
+  //   if (userLocation) {
+  //     const { latitude, longitude } = userLocation;
+  //     getGeolocation(latitude, longitude);
+  //   }
+
+  //   axios
+  //     .post("/user/photo", formData, {
+  //       headers: {
+  //         "Content-Type": "multipart/form-data",
+  //       },
+  //     })
+  //     .then((response) => {
+  //       // Handle success
+  //       console.log("Photo posted successfully!");
+  //       setPhotoTitle("");
+  //       setPhotoFile(null);
+  //       setModalOpen(false);
+  //       // You may want to fetch the updated list of photos from the API
+  //     })
+  //     .catch((error) => {
+  //       // Handle error
+  //       console.error(error);
+  //     });
+  // };
+
   const handlePostPhoto = () => {
     const formData = new FormData();
     formData.append("photo", photoFile);
-    axios
-      .post("/user/photo", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        // Handle success
-        console.log("Photo posted successfully!");
-        setPhotoTitle("");
-        setPhotoFile(null);
-        setModalOpen(false);
-        // You may want to fetch the updated list of photos from the API
-      })
-      .catch((error) => {
-        // Handle error
-        console.error(error);
-      });
+  
+    if (userLocation) {
+      
+      formData.append("Location", Location); // Use the address obtained from getGeolocation
+  
+      axios
+        .post("/user/photo", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          // Handle success
+          console.log("Photo posted successfully!");
+          setPhotoTitle("");
+          setPhotoFile(null);
+          setModalOpen(false);
+          setfirst(!first);
+          // You may want to fetch the updated list of photos from the API
+        })
+        .catch((error) => {
+          // Handle error
+          console.error(error);
+        });
+    } else {
+      // If userLocation is not available, you can handle it accordingly
+      console.log("User location not available");
+    }
   };
+  
+  
+
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -94,12 +173,16 @@ function Home() {
         </MDBContainer>
       </MDBNavbar>
 
-      <MDBContainer fluid>
-        <MDBRow className="mt-4">
-          {/* Display photos */}
-          {/* Example: photos.map(photo => <img key={photo.id} src={photo.url} alt={photo.title} />) */}
-        </MDBRow>
-      </MDBContainer>
+      <MDBRow className="mt-4">
+  {photos.map((photo) => (
+    <img
+     
+      src={photo.image[0].url} // Access the URL from the first image object in the array
+      alt={photo.image[0].filename} // Access the filename from the first image object in the array
+      style={{ width: "200px", height: "200px", objectFit: "cover", margin: "5px" }}
+    />
+  ))}
+</MDBRow>
 
       {/* Modal for posting photos */}
       <MDBModal show={modalOpen} onHide={handleCloseModal}>

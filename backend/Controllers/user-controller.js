@@ -57,14 +57,7 @@ const login = async (req, res) => {
   });
 };
 
-// const getUserLocation=(req, res) =>{
-//   geolocation.getCurrentPosition((position) => {
-//     res.json({
-//       latitude: position.coords.latitude,
-//       longitude: position.coords.longitude
-//     });
-//   });
-// }
+
 
 
 const postPhoto = async (req, res) => {
@@ -73,21 +66,15 @@ const postPhoto = async (req, res) => {
       return res.status(400).json({ error: "No photo file uploaded" });
     }
 
-    const { latitude, longitude } = req.body;
-   console.log(req.body)
-    const location = {
-      type: "Point",
-      coordinates: [longitude, latitude],
-    };
+    const { Location } = req.body;
+    console.log(req.body);
 
     const photo = new Photo({
-      image: [
-        {
-          url: req.file.path,
-          filename: req.file.filename,
-        },
-      ],
-      location,
+      image: {
+        url: req.file.path,
+        filename: req.file.filename,
+      },
+      location:Location,
     });
 
     await photo.save();
@@ -100,8 +87,17 @@ const postPhoto = async (req, res) => {
 };
 
 
+const getImage = async (req, res) => {
+  try {
+    
+    const images = await Photo.find(); // Fetch all images from the database
 
-
+    res.status(200).send({ success: true, images });
+  } catch (error) {
+    res.status(500).send({ success: false, error: "Failed to fetch images" });
+  }
+};
+exports.getImage=getImage
 exports.postPhoto = postPhoto;
 exports.signup = signup;
 exports.login = login;

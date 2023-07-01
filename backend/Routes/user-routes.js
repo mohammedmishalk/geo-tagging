@@ -5,7 +5,8 @@ const { storage } = require("../middleware/cloudinary");
 const {
   signup,
   login,
-  postPhoto
+  postPhoto,
+  getImage
 } = require("../Controllers/user-controller");
 
 const validateUserToken = require("../middleware/userToken");
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.post("/signup", signup);
 router.post("/login", login);
+router.get("/getimage", getImage);
 router.post("/photo", upload.single("photo"), postPhoto);
 
 

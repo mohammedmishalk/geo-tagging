@@ -9,16 +9,9 @@ const photoSchema = new mongoose.Schema({
           type:String
         }
       }],
-  location: {
-    type: {
-      type: String,
-      default: 'Point',
-    },
-    coordinates: {
-      type: [Number],
-      required: true,
-    },
-  },
+      location: {
+        type: String // Store the location name/address as a string
+      },
   createdAt: {
     type: Date,
     default: Date.now,
