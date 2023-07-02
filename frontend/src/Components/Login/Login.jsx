@@ -33,6 +33,7 @@ function Login() {
       console.log(response.data);
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("name", response.data.name);
         setTimeout(() => {
           navigate("/home");
         }, 0);

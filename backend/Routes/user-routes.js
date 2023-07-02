@@ -15,8 +15,8 @@ const router = express.Router();
 
 router.post("/signup", signup);
 router.post("/login", login);
-router.get("/getimage", getImage);
-router.post("/photo", upload.single("photo"), postPhoto);
+router.get("/getimage", validateUserToken, getImage);
+router.post("/photo", validateUserToken,upload.single("photo"), postPhoto);
 
 
 module.exports = router;

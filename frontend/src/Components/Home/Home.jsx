@@ -18,6 +18,7 @@ import {
 } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/axios";
+import {config} from "../../Helpers/axiosUserToken"
 
 function Home() {
   const navigate = useNavigate();
@@ -28,15 +29,23 @@ function Home() {
   const [userLocation, setUserLocation] = useState(null);
   const [Location, setLocation] = useState(null);
   const [first, setfirst] = useState(false)
-  console.log(photos)
-//  const latitude = '11.2475528';
-//  const longitude = '75.8341161';
+  const [filteredPhotos, setFilteredPhotos] = useState([]);
+  const [filterLocation, setFilterLocation] = useState("");
+ 
+ 
+ 
+ 
+  // const token = localStorage.getItem("token");
+  const name = localStorage.getItem("name");
+
+
   useEffect(() => {
     // Fetch photos from API or any other data source
     // Update the 'photos' state with the fetched photos
     // Example:
-     axios.get('/user/getimage').then(response => {
+     axios.get('/user/getimage',config).then(response => {
       setPhotos(response.data.images);
+      setFilteredPhotos(response.data.images);
    
     }).catch(error => {
       console.error(error);
@@ -90,33 +99,18 @@ function Home() {
     setPhotoFile(file);
   };
 
-  //   const formData = new FormData();
-  //   formData.append("photo", photoFile);
 
-  //   if (userLocation) {
-  //     const { latitude, longitude } = userLocation;
-  //     getGeolocation(latitude, longitude);
-  //   }
+  
+  const handleFilterChange = (e) => {
+    const location = e.target.value;
+    setFilterLocation(location);
 
-  //   axios
-  //     .post("/user/photo", formData, {
-  //       headers: {
-  //         "Content-Type": "multipart/form-data",
-  //       },
-  //     })
-  //     .then((response) => {
-  //       // Handle success
-  //       console.log("Photo posted successfully!");
-  //       setPhotoTitle("");
-  //       setPhotoFile(null);
-  //       setModalOpen(false);
-  //       // You may want to fetch the updated list of photos from the API
-  //     })
-  //     .catch((error) => {
-  //       // Handle error
-  //       console.error(error);
-  //     });
-  // };
+    // Filter the photos based on the location
+    const filtered = photos.filter((photo) =>
+      photo.location.includes(location)
+    );
+    setFilteredPhotos(filtered);
+  };
 
   const handlePostPhoto = () => {
     const formData = new FormData();
@@ -130,7 +124,7 @@ function Home() {
         .post("/user/photo", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
-          },
+          },...config,
         })
         .then((response) => {
           // Handle success
@@ -161,9 +155,16 @@ function Home() {
 
   return (
     <div className="vh-100" style={{ backgroundColor: "#6a11cb" }}>
+      
       <MDBNavbar light bgColor="light">
         <MDBContainer fluid>
           <MDBNavbarBrand>Home</MDBNavbarBrand>
+          <input
+        type="text"
+        placeholder="Filter by location"
+        value={filterLocation}
+        onChange={handleFilterChange}
+      />
           <MDBBtn color="primary" onClick={handlePostPhotos}>
             Post Photos
           </MDBBtn>
@@ -172,17 +173,29 @@ function Home() {
           </MDBBtn>
         </MDBContainer>
       </MDBNavbar>
-
       <MDBRow className="mt-4">
-  {photos.map((photo) => (
-    <img
-     
-      src={photo.image[0].url} // Access the URL from the first image object in the array
-      alt={photo.image[0].filename} // Access the filename from the first image object in the array
-      style={{ width: "200px", height: "200px", objectFit: "cover", margin: "5px" }}
-    />
-  ))}
-</MDBRow>
+        {filteredPhotos.map((photo) => (
+          <MDBCol key={photo.id} md="3">
+            <div>
+              <img
+                src={photo.image[0].url}
+                alt={photo.image[0].filename}
+                style={{
+                  width: "200px",
+                  height: "200px",
+                  objectFit: "cover",
+                  margin: "5px",
+                }}
+              />
+              <p>Post By {name} Time {new Date(photo.createdAt).toLocaleTimeString()}</p>
+              <p>
+                {photo.location.split(",")[0]}, {photo.location.split(",")[1]}
+              </p>
+            </div>
+          </MDBCol>
+        ))}
+      </MDBRow>
+
 
       {/* Modal for posting photos */}
       <MDBModal show={modalOpen} onHide={handleCloseModal}>
