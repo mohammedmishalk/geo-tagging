@@ -19,6 +19,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/axios";
 import {config} from "../../Helpers/axiosUserToken"
+import Spinner from '../spinner/spinner';
+
 
 function Home() {
   const navigate = useNavigate();
@@ -31,7 +33,7 @@ function Home() {
   const [first, setfirst] = useState(false)
   const [filteredPhotos, setFilteredPhotos] = useState([]);
   const [filterLocation, setFilterLocation] = useState("");
- 
+  const [loading, setLoading] = useState(false);
  
  
  
@@ -43,12 +45,14 @@ function Home() {
     // Fetch photos from API or any other data source
     // Update the 'photos' state with the fetched photos
     // Example:
+    setLoading(true);
      axios.get('/user/getimage',config).then(response => {
       setPhotos(response.data.images);
       setFilteredPhotos(response.data.images);
-   
+      setLoading(false);
     }).catch(error => {
       console.error(error);
+      setLoading(false);
     });
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -119,7 +123,7 @@ function Home() {
     if (userLocation) {
       
       formData.append("Location", Location); // Use the address obtained from getGeolocation
-  
+      setLoading(true);
       axios
         .post("/user/photo", formData, {
           headers: {
@@ -133,6 +137,8 @@ function Home() {
           setPhotoFile(null);
           setModalOpen(false);
           setfirst(!first);
+          setLoading(false);
+
           // You may want to fetch the updated list of photos from the API
         })
         .catch((error) => {
@@ -154,6 +160,12 @@ function Home() {
   };
 
   return (
+
+
+    <>
+    {loading ? (
+      <Spinner loading={loading} />
+    ) : (
     <div className="vh-100" style={{ backgroundColor: "#6a11cb" }}>
       
       <MDBNavbar light bgColor="light">
@@ -215,6 +227,8 @@ function Home() {
         </MDBModalFooter>
       </MDBModal>
     </div>
+    )}
+    </>
   );
 }
 
