@@ -71,9 +71,11 @@ export default function SignUp() {
                   type='password'
                   size='lg'
                 />
-                <MDBBtn className='mx-2 px-5' type='submit' size='lg'>
-                  Sign Up
-                </MDBBtn>
+<MDBBtn className='mx-2 px-5 btn-prevent-click-expansion' type='submit' size='lg'>
+  Sign Up
+</MDBBtn>
+
+
                 <div>
                   <p className='mb-0'>
                     Already have an account?{' '}

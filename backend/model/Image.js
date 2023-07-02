@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const photoSchema = new mongoose.Schema({
   name: {
-    type: String // Store the location name/address as a string
+    type: String 
   },
     image:[{
         url:{
@@ -13,7 +13,10 @@ const photoSchema = new mongoose.Schema({
         }
       }],
       location: {
-        type: String // Store the location name/address as a string
+        type: String 
+      },
+      userid:{
+         type:String
       },
   createdAt: {
     type: Date,

@@ -2,55 +2,72 @@ const User = require("../model/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Photo = require("../model/Image");
-const exif = require("exif");
 
 const signup = async (req, res) => {
   const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ success: false, error: "Missing required fields" });
+  }
+
+  const lowercaseEmail = email.toLowerCase(); 
 
   const salt = bcrypt.genSaltSync(10);
   const hashPassword = bcrypt.hashSync(password, salt);
   const user = new User({
     name: name,
-    email: email,
+    email: lowercaseEmail, 
     password: hashPassword,
   });
 
   try {
-    await user.save();
-    res.status(200).send({ success: true });
+    const existingUser = await User.findOne({ email: lowercaseEmail });
+
+    if (existingUser) {
+      return res.status(409).json({ success: false, error: "User already exists" });
+    } else {
+      await user.save();
+      return res.status(200).json({ success: true });
+    }
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ success: false, error: "User already exists" });
+    console.error(error);
+    return res.status(500).json({ success: false, error: "An error occurred" });
   }
 };
 
 const login = async (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Missing email or password" });
+  }
+
   let existingUser;
   try {
     existingUser = await User.findOne({ email: email });
   } catch (err) {
-    return new Error(err);
+    return res.status(500).json({ message: "An error occurred" });
   }
+  
   if (!existingUser) {
     return res.status(400).json({ message: "User not found. Signup please" });
   }
 
   const isPasswordCorrect = bcrypt.compareSync(password, existingUser.password);
   if (!isPasswordCorrect) {
-    return res.status(400).json({ message: "invalid Email/Password" });
+    return res.status(400).json({ message: "Invalid email/password" });
   }
+
   const reps = {
-    // eslint-disable-next-line no-underscore-dangle
     id: existingUser._id,
     email: existingUser.email,
     accountType: "user",
   };
-  // after password is correct we want to generate a token
+
   const token = jwt.sign(reps, process.env.JWT_SECRET_KEY);
 
   return res.status(200).json({
-    message: "successfully Logged In",
+    message: "Successfully logged in",
     name: existingUser.name,
     token,
   });
@@ -62,8 +79,11 @@ const postPhoto = async (req, res) => {
       return res.status(400).json({ error: "No photo file uploaded" });
     }
 
-    const { Location, name } = req.body;
-    console.log(req.body);
+    const { Location, name, userId } = req.body;
+    
+    if (!Location || !name || !userId) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
 
     const photo = new Photo({
       name: name,
@@ -72,6 +92,7 @@ const postPhoto = async (req, res) => {
         filename: req.file.filename,
       },
       location: Location,
+      user: userId,
     });
 
     await photo.save();
@@ -82,6 +103,7 @@ const postPhoto = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 const getImage = async (req, res) => {
   try {
