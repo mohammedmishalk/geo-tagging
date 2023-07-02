@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const Photo = require("../model/Image");
 const exif = require("exif");
 
-
 const signup = async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -21,7 +20,7 @@ const signup = async (req, res) => {
     res.status(200).send({ success: true });
   } catch (error) {
     console.log(error);
-    res.status(500).send({ success: false, error: "Failed to save user" });
+    res.status(500).send({ success: false, error: "User already exists" });
   }
 };
 
@@ -57,24 +56,22 @@ const login = async (req, res) => {
   });
 };
 
-
-
-
 const postPhoto = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No photo file uploaded" });
     }
 
-    const { Location } = req.body;
+    const { Location, name } = req.body;
     console.log(req.body);
 
     const photo = new Photo({
+      name: name,
       image: {
         url: req.file.path,
         filename: req.file.filename,
       },
-      location:Location,
+      location: Location,
     });
 
     await photo.save();
@@ -86,10 +83,8 @@ const postPhoto = async (req, res) => {
   }
 };
 
-
 const getImage = async (req, res) => {
   try {
-    
     const images = await Photo.find(); // Fetch all images from the database
 
     res.status(200).send({ success: true, images });
@@ -97,7 +92,7 @@ const getImage = async (req, res) => {
     res.status(500).send({ success: false, error: "Failed to fetch images" });
   }
 };
-exports.getImage=getImage
+exports.getImage = getImage;
 exports.postPhoto = postPhoto;
 exports.signup = signup;
 exports.login = login;

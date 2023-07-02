@@ -119,7 +119,7 @@ function Home() {
   const handlePostPhoto = () => {
     const formData = new FormData();
     formData.append("photo", photoFile);
-  
+    formData.append("name", name);
     if (userLocation) {
       
       formData.append("Location", Location); // Use the address obtained from getGeolocation

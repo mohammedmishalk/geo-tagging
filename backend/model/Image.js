@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 
 const photoSchema = new mongoose.Schema({
+  name: {
+    type: String // Store the location name/address as a string
+  },
     image:[{
         url:{
           type:String

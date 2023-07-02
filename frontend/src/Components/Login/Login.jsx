@@ -34,9 +34,9 @@ function Login() {
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("name", response.data.name);
-        setTimeout(() => {
-          navigate("/home");
-        }, 0);
+        
+        window.location.href = '/home'
+     
       } else {
         toast.error(response.data.message);
       }
