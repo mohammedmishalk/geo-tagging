@@ -2,7 +2,48 @@ const User = require("../model/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Photo = require("../model/Image");
+const nodemailer = require('nodemailer');
 
+// configure via env vars
+const mailTransporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "mishalnunu@gmail.com", // Store email credentials securely
+    pass: "qgwlzriynfzukuwy", // Use environment variables
+  },
+});
+
+
+
+const sendLocation = async (req, res) => {
+  
+  const { latitude, longitude } = req.body;
+
+  if (latitude == null || longitude == null) {
+    return res.status(400).json({ message: 'Missing email, latitude or longitude' });
+  }
+
+  const mailOptions = {
+    from:`mishalnunu@gmail.com`,
+   to: "shamleek28@gmail.com",
+    subject: 'Your Current Location',
+    html: `
+      <h3>Here is your location data:</h3>
+      <ul>
+        <li><strong>Latitude:</strong> ${latitude}</li>
+        <li><strong>Longitude:</strong> ${longitude}</li>
+      </ul>
+    `
+  };
+
+  try {
+    await mailTransporter.sendMail(mailOptions);
+    return res.status(200).json({ message: 'Location emailed successfully' });
+  } catch (err) {
+    console.error('Error sending location email:', err);
+    return res.status(500).json({ message: 'Failed to send location email' });
+  }
+};
 const signup = async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -117,4 +158,5 @@ const getImage = async (req, res) => {
 exports.getImage = getImage;
 exports.postPhoto = postPhoto;
 exports.signup = signup;
+exports.sendLocation = sendLocation;
 exports.login = login;

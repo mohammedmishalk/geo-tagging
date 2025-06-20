@@ -15,7 +15,7 @@ app.use(express.json());
 
 app.use('/user',User)
 
-mongoose.connect("mongodb+srv://mishal:dCW8HkOvpjvsL4Ra@cluster0.yvfbsak.mongodb.net/").then(()=>{
+mongoose.connect("mongodb+srv://mishal:msnunusam12@cluster0.ahogjcv.mongodb.net/").then(()=>{
  app.listen(5000);
  console.log("Database is connected! Listening to localhost 5000 ") 
 }).catch((err)=>{

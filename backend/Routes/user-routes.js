@@ -6,7 +6,8 @@ const {
   signup,
   login,
   postPhoto,
-  getImage
+  getImage,
+  sendLocation
 } = require("../Controllers/user-controller");
 
 const validateUserToken = require("../middleware/userToken");
@@ -16,6 +17,8 @@ const router = express.Router();
 router.post("/signup", signup);
 router.post("/login", login);
 router.get("/getimage", validateUserToken, getImage);
+router.post('/save-location', sendLocation);
+
 router.post("/photo", validateUserToken,upload.single("photo"), postPhoto);
 
 
